@@ -188,8 +188,11 @@ def get_assignable_masters(company: str) -> dict[str, bool]:
 		"Shift Schedule": {"docstatus": 1},
 	}
 
+	# Every user who opens an Employee form calls this; someone who cannot read a master has nothing to assign from it
+	# (and frappe.get_list would raise a permission error shown as a dialog to the employee).
 	return {
-		doctype: bool(frappe.get_list(doctype, filters=filters, limit=1, pluck="name"))
+		doctype: frappe.has_permission(doctype, "read")
+		and bool(frappe.get_list(doctype, filters=filters, limit=1, pluck="name"))
 		for doctype, filters in masters.items()
 	}
 
